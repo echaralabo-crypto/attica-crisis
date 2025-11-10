@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Crisis Management Center of Attica – Κέντρο Διαχείρισης Κρίσεων Αττικής</title>
+<style>
+body{
+  font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,sans-serif;
+  background:#0d1117;color:#e6eefc;margin:0;
+}
+header{
+  background:#161b22;border-bottom:1px solid #30363d;
+  padding:16px;position:sticky;top:0;z-index:10;
+  display:flex;justify-content:space-between;align-items:center;
+}
+h1{margin:0;font-size:18px}
+.container{max-width:1200px;margin:auto;padding:20px}
+section{
+  background:#1c222c;border:1px solid #30363d;border-radius:8px;
+  padding:16px;margin-bottom:20px;
+}
+label{display:block;margin-top:10px;font-weight:600}
+input,select,textarea{
+  width:100%;padding:8px;border-radius:6px;border:1px solid #30363d;
+  background:#0e1626;color:#fff;
+}
+button{
+  cursor:pointer;background:#1f6feb;color:#fff;border:none;
+  padding:10px 16px;margin-top:10px;border-radius:6px;
+}
+button:hover{background:#388bfd}
+#map{height:400px;border-radius:8px;margin-top:10px}
+table{width:100%;border-collapse:collapse;margin-top:10px}
+th,td{border-bottom:1px solid #30363d;padding:8px;text-align:left}
+th{background:#21262d}
+footer{text-align:center;color:#888;padding:20px;font-size:13px}
+.lang-select{
+  background:#0e1626;color:#fff;border:1px solid #30363d;
+  border-radius:6px;padding:5px
+}
+.icon{font-size:18px}
+</style>
+</head>
+
+<body>
+<header>
+  <h1 id="siteTitle">🛡️ Κέντρο Διαχείρισης Κρίσεων Αττικής</h1>
+  <select id="lang" class="lang-select" onchange="setLang(this.value)">
+    <option value="el">🇬🇷 Ελληνικά</option>
+    <option value="en">🇬🇧 English</option>
+  </select>
+</header>
+
+<div class="container">
+<section>
+  <h2 id="addTitle">📋 Καταχώριση Συμβάντος</h2>
+  <form id="incidentForm">
+    <label id="typeLabel">Τύπος συμβάντος:</label>
+    <select id="type">
+      <option>Φυσική Καταστροφή</option>
+      <option>Χημικό Συμβάν</option>
+      <option>Βιομηχανικό Ατύχημα</option>
+      <option>Άλλο</option>
+    </select>
+
+    <label id="titleLabel">Τίτλος:</label>
+    <input id="title" placeholder="π.χ. Πυρκαγιά σε δάσος">
+
+    <label id="locLabel">Τοποθεσία:</label>
+    <input id="location" placeholder="π.χ. Μαραθώνας">
+
+    <label id="sevLabel">Σοβαρότητα:</label>
+    <select id="severity">
+      <option>Χαμηλή</option>
+      <option>Μεσαία</option>
+      <option>Υψηλή</option>
+      <option>Κρίσιμη</option>
+    </select>
+
+    <label>👥 Αριθμός Μελών:</label>
+    <input id="members" type="number" min="0" placeholder="π.χ. 5">
+
+    <label>🚒 Αριθμός Οχημάτων:</label>
+    <input id="vehicles" type="number" min="0" placeholder="π.χ. 2">
+
+    <label>🚗 Τύπος Οχήματος:</label>
+    <select id="vehicletype">
+      <option>Α Τύπου</option>
+      <option>Β Τύπου</option>
+      <option>Γ Τύπου</option>
+      <option>Δ Τύπου</option>
+      <option>Υποστήριξης</option>
+    </select>
+
+    <label id="descLabel">Περιγραφή / Ενέργειες:</label>
+    <textarea id="details" rows="3" placeholder="Περιγραφή συμβάντος..."></textarea>
+    <button type="submit" id="saveBtn">➕ Καταχώριση</button>
+  </form>
+  <div id="map"></div>
+</section>
+<section>
+  <h2 id="tableTitle">📜 Συμβάντα</h2>
+  <table id="incidentTable">
+    <thead>
+      <tr>
+        <th>Τύπος</th>
+        <th>Τίτλος</th>
+        <th>Τοποθεσία</th>
+        <th>Σοβαρότητα</th>
+        <th>👥 Μέλη</th>
+        <th>🚒 Οχήματα</th>
+        <th>🚗 Τύπος Οχήματος</th>
+        <th>🕓 Ώρα</th>
+        <th>📤 Κοινοποίηση</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+  <div style="margin-top:10px">
+    <button onclick="exportJSON()" id="expBtn">💾 Εξαγωγή</button>
+    <button onclick="window.print()" id="printBtn">🖨️ Εκτύπωση</button>
+    <button onclick="resetData()" id="resetBtn">♻️ Επαναφορά</button>
+  </div>
+</section>
+
+<section>
+  <h2 id="notesTitle">💬 Επικοινωνία / Σημειώσεις</h2>
+  <textarea id="notes" rows="5"
+            placeholder="Γράψε εδώ εσωτερικές σημειώσεις ή μηνύματα ομάδας..."></textarea>
+  <button onclick="saveNotes()" id="notesBtn">Αποθήκευση Σημειώσεων</button>
+</section>
+</div>
+
+<footer>
+  © 2025 Crisis Management Center of Attica – Λειτουργεί πλήρως offline
+</footer>
+<script>
+/* ====== ΔΙΓΛΩΣΣΙΑ ====== */
+const strings = {
+  el: {
+    title: "Κέντρο Διαχείρισης Κρίσεων Αττικής",
+    add: "Καταχώριση Συμβάντος",
+    events: "Συμβάντα",
+    contact: "Επικοινωνία / Σημειώσεις",
+    export: "Εξαγωγή",
+    print: "Εκτύπωση",
+    reset: "Επαναφορά",
+    notesSaved: "Οι σημειώσεις αποθηκεύτηκαν.",
+    confirmReset: "Διαγραφή όλων των δεδομένων;",
+    shareText: (t, l, ty, m, v, vt) =>
+      `🚨 Συμβάν: ${t}\n📍 Τοποθεσία: ${l}\n🕓 ${new Date().toLocaleString("el-GR")}\n🧭 Τύπος: ${ty}\n👥 Μέλη: ${m}\n🚒 Οχήματα: ${v} (${vt})`
+  },
+  en: {
+    title: "Crisis Management Center of Attica",
+    add: "Add Incident",
+    events: "Incidents",
+    contact: "Contact / Notes",
+    export: "Export",
+    print: "Print",
+    reset: "Reset",
+    notesSaved: "Notes saved.",
+    confirmReset: "Delete all data?",
+    shareText: (t, l, ty, m, v, vt) =>
+      `🚨 Incident: ${t}\n📍 Location: ${l}\n🕓 ${new Date().toLocaleString("en-GB")}\n🧭 Type: ${ty}\n👥 Members: ${m}\n🚒 Vehicles: ${v} (${vt})`
+  }
+};
+let lang = localStorage.getItem("lang") || "el";
+function setLang(l) {
+  lang = l;
+  localStorage.setItem("lang", l);
+  document.getElementById("siteTitle").textContent = "🛡️ " + strings[l].title;
+  document.getElementById("addTitle").textContent = "📋 " + strings[l].add;
+  document.getElementById("tableTitle").textContent = "📜 " + strings[l].events;
+  document.getElementById("notesTitle").textContent = "💬 " + strings[l].contact;
+  document.getElementById("expBtn").textContent = "💾 " + strings[l].export;
+  document.getElementById("printBtn").textContent = "🖨️ " + strings[l].print;
+  document.getElementById("resetBtn").textContent = "♻️ " + strings[l].reset;
+}
+setTimeout(() => {
+  setLang(lang);
+  document.getElementById("lang").value = lang;
+}, 300);
+
+/* ====== ΑΠΟΘΗΚΕΥΣΗ / ΠΙΝΑΚΑΣ ====== */
+const form = document.getElementById("incidentForm");
+const tableBody = document.querySelector("#incidentTable tbody");
+const notesEl = document.getElementById("notes");
+let map, marker;
+
+function loadIncidents() {
+  const data = JSON.parse(localStorage.getItem("incidents") || "[]");
+  data.forEach(addRow);
+}
+function addRow(item) {
+  const tr = document.createElement("tr");
+  const mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.location)}`;
+  tr.innerHTML = `
+    <td>${item.type}</td>
+    <td>${item.title}</td>
+    <td><a href="${mapLink}" target="_blank">${item.location}</a></td>
+    <td>${item.severity}</td>
+    <td>👥 ${item.members}</td>
+    <td>🚒 ${item.vehicles}</td>
+    <td>🚗 ${item.vehicletype}</td>
+    <td>${item.time}</td>
+    <td>
+      <button onclick="shareIncident('${item.title}','${item.location}','${item.type}','${item.members}','${item.vehicles}','${item.vehicletype}')">📤</button>
+      <a href="viber://forward?text=${encodeURIComponent(strings[lang].shareText(item.title,item.location,item.type,item.members,item.vehicles,item.vehicletype))}" target="_blank">📲</a>
+      <a href="fb-messenger://share/?link=${encodeURIComponent(mapLink)}" target="_blank">💬</a>
+      <a href="https://wa.me/?text=${encodeURIComponent(strings[lang].shareText(item.title,item.location,item.type,item.members,item.vehicles,item.vehicletype))}" target="_blank">🟢</a>
+      <a href="mailto:?subject=${encodeURIComponent('Crisis Report')}&body=${encodeURIComponent(strings[lang].shareText(item.title,item.location,item.type,item.members,item.vehicles,item.vehicletype))}" target="_blank">✉️</a>
+    </td>`;
+  tableBody.appendChild(tr);
+}
+form.addEventListener("submit", e => {
+  e.preventDefault();
+  const incident = {
+    type: type.value,
+    title: title.value,
+    location: location.value,
+    severity: severity.value,
+    members: members.value,
+    vehicles: vehicles.value,
+    vehicletype: vehicletype.value,
+    details: details.value,
+    time: new Date().toLocaleString("el-GR")
+  };
+  addRow(incident);
+  const data = JSON.parse(localStorage.getItem("incidents") || "[]");
+  data.push(incident);
+  localStorage.setItem("incidents", JSON.stringify(data));
+  form.reset();
+});
+
+function exportJSON() {
+  const data = localStorage.getItem("incidents") || "[]";
+  const blob = new Blob([data], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "incidents.json";
+  a.click();
+}
+function resetData() {
+  if (confirm(strings[lang].confirmReset)) {
+    localStorage.clear();
+    tableBody.innerHTML = "";
+  }
+}
+function saveNotes() {
+  localStorage.setItem("notes", notesEl.value);
+  alert(strings[lang].notesSaved);
+}
+function loadNotes() {
+  const notes = localStorage.getItem("notes");
+  if (notes) notesEl.value = notes;
+}
+
+/* ====== ΚΟΙΝΟΠΟΙΗΣΗ ====== */
+function shareIncident(title, location, type, members, vehicles, vehicletype) {
+  const mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location)}`;
+  const text = strings[lang].shareText(title, location, type, members, vehicles, vehicletype) + `\n${mapLink}`;
+  if (navigator.share) {
+    navigator.share({ title: strings[lang].title, text });
+  } else {
+    navigator.clipboard.writeText(text);
+    alert(lang === "el" ? "✅ Αντιγράφηκε στο πρόχειρο!" : "✅ Copied to clipboard!");
+  }
+}
+
+/* ====== GOOGLE MAPS ====== */
+function initMap() {
+  map = new google.maps.Map(document.getElementById("map"), {
+    center: { lat: 37.9838, lng: 23.7275 },
+    zoom: 10,
+    styles: [{ elementType: "geometry", stylers: [{ color: "#1d2c4d" }] }]
+  });
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(pos => {
+      const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      map.setCenter(loc);
+      marker = new google.maps.Marker({ position: loc, map });
+    });
+  }
+  map.addListener("click", e => {
+    if (marker) marker.setMap(null);
+    marker = new google.maps.Marker({ position: e.latLng, map });
+  });
+}
+loadIncidents();
+loadNotes();
+</script>
+
+<!-- Google Maps API -->
+<script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDcdz25Z052MS2aJPodRmoeRMrZ0Y9BCIU&callback=initMap"></script>
+</body>
+</html>
+<script>
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("sw.js").then(() => {
+    console.log("✅ Service worker ενεργοποιήθηκε!");
+  });
+}
+</script>
+form.addEventListener("submit", e => {
+  e.preventDefault();
+  const incident = {
+    type: type.value,
+    title: title.value,
+    location: location.value,
+    severity: severity.value,
+    members: members.value,
+    vehicles: vehicles.value,
+    vehicletype: vehicletype.value,
+    details: details.value,
+    time: new Date().toLocaleString("el-GR")
+  };
+  addRow(incident);
+  const data = JSON.parse(localStorage.getItem("incidents") || "[]");
+  data.push(incident);
+  localStorage.setItem("incidents", JSON.stringify(data));
+  form.reset();
+});
+function addRow(item) {
+  const tr = document.createElement("tr");
+  ...
+  tableBody.appendChild(tr);
+}
+
+
